@@ -15,74 +15,20 @@ class HashMap
     std::vector<std::pair<int , std::list<std::pair<Key,Value>>*>> table;
 
     //HASHING HELPER 
-    int Hashing(Key key) const 
-    {
-        return key % table.size();
-    }
+    int Hashing(Key key) const; 
 
     //PRIME HELPER1
-    bool is_prime(int num)
-    {
-        for(int i = 2; i <= num/2; ++i)
-        {
-            if(num % i == 0)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
+    bool is_prime(int num);
 
     //PRIME HELPER2    
-    int next_prime(int current_prime)
-    {
-        for(int i = current_prime + 1; ;i++)
-        {
-            if(is_prime(i))
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-
+    int next_prime(int current_prime);
+    
     //REHASHING HELPER
-    void ReHashing()
-    {
-        typename std::vector<std::pair<int, std::list<std::pair<Key,Value>>*>> new_table;
-        new_table.resize(next_prime(table.size()) , {0,nullptr});
-        for(int i = 0; i < table.size(); ++i)
-        {
-            if(table[i].first)
-            {
-                typename std::list<std::pair<Key,Value>>::iterator it = table[i].second -> begin();
-                
-                for(;it != table[i].second -> end() ; it++)
-                {
-                    new_table[(it -> second % new_table.size())].second -> push_front({it -> first, it -> second});
-                    ++new_table[(it -> second % new_table.size())].first;
-                }  
-            }
-        }
-        table = std::move(new_table);
-    }
+    void ReHashing();
 
     //FIND HELPER(FINDS BY KEY)
-    typename std::list<std::pair<Key,Value>>::iterator myFind(const Key& key)
-    {
-        int index = Hashing(key);
-        typename std::list<std::pair<Key,Value>>::iterator curr_list = table[index].second -> begin();
-        typename std::list<std::pair<Key,Value>>::iterator curr_list_end = table[index].second -> end();
-        while (curr_list != curr_list_end) 
-        {
-            if ((*curr_list).first == key) 
-            {
-                return curr_list;
-            }
-            ++curr_list;
-        }
-        return curr_list;
-    } 
+    typename std::list<std::pair<Key,Value>>::iterator myFind(const Key& key);
+    
 
     public:
     HashMap();                                                                          //done
@@ -99,6 +45,80 @@ class HashMap
     std::vector<Value> valueSet();                                                      //done
     std::vector<std::pair<int , std::list<std::pair<Key,Value>>*>> entrySet();          //done
 };
+
+///PRIVATE HELPER FUNCTIONS
+template<typename Key, typename Value>
+int HashMap<Key,Value>::Hashing(Key key) const 
+{
+    return key % table.size();
+}
+
+template<typename Key, typename Value>
+bool HashMap<Key,Value>::is_prime(int num)
+{
+    for(int i = 2; i <= num/2; ++i)
+    {
+        if(num % i == 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<typename Key , typename Value>
+int HashMap<Key,Value>::next_prime(int current_prime)
+{
+    for(int i = current_prime + 1; ;i++)
+    {
+        if(is_prime(i))
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+template<typename Key, typename Value>
+void HashMap<Key,Value>::ReHashing()
+{
+    typename std::vector<std::pair<int, std::list<std::pair<Key,Value>>*>> new_table;
+    new_table.resize(next_prime(table.size()) , {0,nullptr});
+    for(int i = 0; i < table.size(); ++i)
+    {
+        if(table[i].first)
+        {
+            typename std::list<std::pair<Key,Value>>::iterator it = table[i].second -> begin();
+            
+            for(;it != table[i].second -> end() ; it++)
+            {
+                new_table[(it -> second % new_table.size())].second -> push_front({it -> first, it -> second});
+                ++new_table[(it -> second % new_table.size())].first;
+            }  
+        }
+    }
+    table = std::move(new_table);
+}
+
+template<typename Key, typename Value>
+typename std::list<std::pair<Key,Value>>::iterator HashMap<Key,Value>::myFind(const Key& key)
+{
+    int index = Hashing(key);
+    typename std::list<std::pair<Key,Value>>::iterator curr_list = table[index].second -> begin();
+    typename std::list<std::pair<Key,Value>>::iterator curr_list_end = table[index].second -> end();
+    while (curr_list != curr_list_end) 
+    {
+        if ((*curr_list).first == key) 
+        {
+            return curr_list;
+        }
+        ++curr_list;
+    }
+    return curr_list;
+} 
+
+//--------------------------------------------- 
+
 
 //CONSTRUCTOR
 template<typename Key, typename Value>
