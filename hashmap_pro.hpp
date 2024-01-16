@@ -49,20 +49,22 @@ class HashMap
     //REHASHING HELPER
     void ReHashing()
     {
-        std::vector<std::pair<int, std::list<std::pair<Key,Value>>*>> new_table;
+        typename std::vector<std::pair<int, std::list<std::pair<Key,Value>>*>> new_table;
         new_table.resize(next_prime(table.size()) , {0,nullptr});
         for(int i = 0; i < table.size(); ++i)
         {
             if(table[i].first)
             {
-                auto it = table[i].second -> begin();
-                for(;it < table[i].second -> end() ; it++)
+                typename std::list<std::pair<Key,Value>>::iterator it = table[i].second -> begin();
+                
+                for(;it != table[i].second -> end() ; it++)
                 {
-                    new_table.put(it -> first,it -> second);
+                    new_table[(it -> second % new_table.size())].second -> push_front({it -> first, it -> second});
+                    ++new_table[(it -> second % new_table.size())].first;
                 }  
             }
         }
-        table.swap(new_table);
+        table = std::move(new_table);
     }
 
     //FIND HELPER(FINDS BY KEY)
@@ -88,8 +90,8 @@ class HashMap
     void put(const Key& , const Value&);                                                //done
     Value get(const Key&);                                                              //done
     void remove(const Key&);                                                            //done
-    bool containsKey(const Key&);                                                       //????
-    bool containsValue(const Value&);                                                   //    
+    bool containsKey(const Key&);                                                       //done
+    bool containsValue(const Value&);                                                   //done    
     int size();                                                                         //done
     bool isEmpty();                                                                     //done
     void clear();                                                                       //done
@@ -134,11 +136,13 @@ void HashMap<Key, Value>::put(const Key& key, const Value& value)
         }
     }
 
-    {
-        cur_pair.second -> push_front({key,value});
-        ++table[index].first;
-    }
+    cur_pair.second -> push_front({key,value});
+    ++table[index].first;
 
+    if(table[index].first == table.size())
+    {
+        ReHashing();
+    }
     
 }
 
@@ -259,6 +263,8 @@ std::vector<Value> HashMap<Key,Value>::valueSet()
     return valueset;
 }
 
+
+//CONTAINSKEY
 template<typename Key,typename Value>
 bool HashMap<Key,Value>::containsKey(const Key& key)
 {
@@ -268,6 +274,7 @@ bool HashMap<Key,Value>::containsKey(const Key& key)
     return it != vec.end();
 }
 
+//CONTAINSVALUE
 template<typename Key,typename Value>
 bool HashMap<Key,Value>::containsValue(const Value& key)
 {
@@ -277,6 +284,7 @@ bool HashMap<Key,Value>::containsValue(const Value& key)
     return it != vec.end();
 }
 
+//ENTRYSET
 template<typename Key,typename Value>
 std::vector<std::pair<int , std::list<std::pair<Key,Value>>*>> HashMap<Key,Value>::entrySet()
 {
